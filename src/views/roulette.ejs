@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<%- include('head') %>
+
+  <body>
+    <%- include('navigation') %>
+      <main>
+        <h1> Roulette Route</h1>
+        <p>Ruletas:</p>
+        <% roulettes.forEach(function(roulette) { %>
+          <details>
+            <summary>
+              <strong>Name:</strong>
+              <%= roulette.name %>, <strong>Cost:</strong>
+                <%= roulette.cost %>
+            </summary>
+            <ul>
+              <% roulette.prizes.forEach(function(prize) { %>
+                <li><strong>Name:</strong>
+                  <%= prize.name %>, <strong>Probability:</strong>
+                    <%= prize.probability %>
+                </li>
+                <% }); %>
+            </ul>
+            <button class="delete-button" data-id="<%= roulette._id %>">Delete</button>
+          </details>
+          <% }); %>
+
+            <form id="rouletteForm">
+              <label for="name">Name:</label><br>
+              <input required type="text" id="name" name="name"><br>
+              <label for="cost">Cost:</label><br>
+              <input required type="number" id="cost" name="cost"><br>
+              <div id="prizes">
+                <label for="prizeName0">Prize Name:</label><br>
+                <input required type="text" id="prizeName0" name="prizeName0"><br>
+                <label for="prizeProbability0">Prize Probability:</label><br>
+                <input required type="number" id="prizeProbability0" name="prizeProbability0" step="0.01" max="1"><br>
+              </div>
+              <button type="button" id="addPrize">Add another prize</button><br>
+              <input type="submit" value="Create">
+            </form>
+      </main>
+
+      <%- include('scripts') %>
+
+        <script>
+          $(document).ready(function () {
+            var prizeCount = 1;
+            $('#addPrize').click(function () {
+              $('#prizes').append(`
+              <label for="prizeName${prizeCount}">Prize Name:</label><br>
+              <input required type="text" id="prizeName${prizeCount}" name="prizeName${prizeCount}"><br>
+              <label for="prizeProbability${prizeCount}">Prize Probability:</label><br>
+              <input required type="number" id="prizeProbability${prizeCount}" name="prizeProbability${prizeCount}
+              " step="0.01" max="1"><br>
+            `);
+              prizeCount++;
+            });
+
+            $('#rouletteForm').submit(function (e) {
+              e.preventDefault();
+              var prizes = [];
+              for (var i = 0; i < prizeCount; i++) {
+                prizes.push({
+                  name: $(`#prizeName${i}`).val(),
+                  probability: $(`#prizeProbability${i}`).val()
+                });
+              }
+              axios.post('/roulette', {
+                name: $('#name').val(),
+                cost: $('#cost').val(),
+                prizes: prizes
+              })
+                .then(function (response) {
+                  location.reload();
+
+                })
+                .catch(function (error) {
+                  console.log(error);
+                });
+            });
+
+            $('.delete-button').click(function () {
+              var rouletteId = $(this).data('id');
+              axios.delete('/roulette', { data: { id: rouletteId } })
+                .then(function (response) {
+                  location.reload();
+                })
+                .catch(function (error) {
+                  console.log(error);
+                });
+            });
+
+          });
+        </script>
+  </body>
+
+</html>

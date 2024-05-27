@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<%- include('head') %>
+
+  <body>
+    <%- include('navigation') %>
+      <main>
+        <h1>Bienvenido a RouletteApp</h1>
+        <p>
+          <%= message %>
+        </p>
+        <p>
+          Tu conteo de creditos es: <span id="credits">
+            <%= credits %>
+          </span>
+        </p>
+
+        <details>
+          <summary>Premios obtenidos</summary>
+          <ul>
+            <% prizes.map(function(prize) { %>
+              <li>
+                <%= prize %>
+              </li>
+              <% }); %>
+          </ul>
+        </details>
+        <p class="notice">Tu ultimo credito lo obtuviste a las <%= lastVisit %>
+        </p>
+        <p class="notice">y actualmente son <%= actualDate %>
+        </p>
+        <p class="notice">y actualmente son <%= actualDate %>
+        </p>
+
+        <p>Ruletas:</p>
+        <% roulettes.forEach(function(roulette) { %>
+          <details>
+            <summary>
+              <strong>
+                <%= roulette.name %>
+              </strong>
+              <strong id="rouletteCost">Costo de la ruleta: <span id="cost">
+                  <%= roulette.cost %>
+                </span>
+              </strong>
+            </summary>
+            <ul>
+              <% roulette.prizes.forEach(function(prize) { %>
+                <li><strong>Prize:</strong>
+                  <%= prize.name %>, <strong>Probability:</strong>
+                    <%= prize.probability %>
+                </li>
+                <% }); %>
+            </ul>
+            <button class="spinButton" data-id="<%= roulette._id %>">Girar la Ruleta</button>
+
+          </details>
+          <% }); %>
+      </main>
+      <%- include('scripts') %>
+        <script>
+          $('.spinButton').click(function () {
+            const creditsElement = $('#credits');
+            let credits = Number(creditsElement.text());
+            // let rouletteCost = Number($('#cost').text());
+
+            if (credits > 0) {
+              credits--;
+              creditsElement.text(credits);
+              const rouletteId = $(this).data('id');
+              $.ajax({
+                url: '/roulette/spin',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                  rouletteId: rouletteId,
+                }),
+                success: function (data) {
+                  console.log('Success:', data);
+                  alert(`Ganaste: ${data.prize}`);
+                  location.reload();
+                },
+                error: function (error) {
+                  console.error('Error:', error);
+                }
+              });
+            } else {
+              alert('No tienes suficientes créditos para girar la ruleta.');
+            }
+          });
+        </script>
+  </body>
+
+</html>
